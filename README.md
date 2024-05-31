@@ -1,6 +1,6 @@
 # SimplesAPI
 
-**SimpleAPI** is a **Python-based application framework** designed to simplify the implementation of various functionalities such as database connections, structured logging, event dispatching, bucket access, and queue processing. By **reducing code repetition** and **enhancing code readability**, SimpleAPI allows developers to focus on solving business problems and rapidly create Proof of Concepts (POCs).
+**SimplesAPI** is a **Python-based application framework** designed to simplify the implementation of various functionalities such as database connections, structured logging, event dispatching, bucket access, and queue processing. By **reducing code repetition** and **enhancing code readability**, SimpleAPI allows developers to focus on solving business problems and rapidly create Proof of Concepts (POCs).
 
 <p align="center">
   <img width="119" alt="image" src="https://github.com/oandersonmagalhaes/simplesapi/assets/83456692/7374e4f8-f9a8-4530-9e71-785e524e2b58">
@@ -16,10 +16,10 @@
 - Rapid POC Development: Quickly develop and iterate on Proof of Concepts.
 
 ## Installation
-To install SimpleAPI, simply run:
+To install SimplesAPI, simply run:
 
 ```bash
-pip install simpleapi
+pip install simplesapi
 ```
 
 # Getting Started
