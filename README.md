@@ -49,6 +49,11 @@ async def handler(userId: str):
     return {"id": userId}
 ```
 
+## Running
+```
+uvicorn main:app
+```
+
 ## Contributing
 We welcome contributions to SimpleAPI! Please read our contributing guidelines before submitting a pull request.
 
