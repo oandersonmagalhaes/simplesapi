@@ -15,10 +15,9 @@ class SimplesConfig(BaseModel):
     database_connection_string: Optional[str] = Field(default=settings.SIMPLESAPI_DB_CONN)
 
 class SimplesAPI(FastAPI):
-    def __init__(self, simples=SimplesConfig(), **kwargs):
-        self.simples = simples
-        super().__init__(lifespan=lifespan, **kwargs)
-        if simples.routes_path:
-            register_routes(self,simples.routes_path)
+    def __init__(self, *args, **kwargs):
+        self.simples = SimplesConfig(**kwargs)
+        super().__init__(lifespan=lifespan.lifespan, *args, **kwargs)
+        if self.simples.routes_path:
+            register_routes(self,self.simples.routes_path)
 
-        
