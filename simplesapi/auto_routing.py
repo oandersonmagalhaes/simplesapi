@@ -1,7 +1,6 @@
 
 import importlib
 import os
-from simplesapi.app import SimplesAPI
 from simplesapi.internal_logger import simplesapi_internal_logger
 
 
@@ -14,7 +13,7 @@ def _import_handler(module_path, handler_name="handler"):
     spec.loader.exec_module(module)
     return getattr(module, handler_name)
 
-def _create_route_from_file(app: SimplesAPI, file_path: str, base_path: str) -> None:
+def _create_route_from_file(app, file_path: str, base_path: str) -> None:
     parts = file_path.split(os.sep)
     method_file_result = parts[-1].split('.')[0].split('__')
     
