@@ -9,16 +9,21 @@ def _import_handler(module_path, handler_name="handler"):
     spec.loader.exec_module(module)
     return getattr(module, handler_name)
 
-def _create_route_from_file(app, file_path):
+def _create_route_from_file(app, file_path: str) -> None:
     parts = file_path.split(os.sep)
-    method_file = parts[-1]
-    method = method_file.split('.')[0].split('__')[1].lower() if '__' in method_file else method_file.split('.')[0].lower()
+    method_file_result = parts[-1].split('.')[0].lower().split('__')
+    
+    last_route = method_file_result[0] if len(method_file_result) > 1 else None
+    method = method_file_result[-1]
     
     route = os.sep.join(parts[:-1])
     route = route.replace('routes', '')
     route = route.replace('[', '{').replace(']', '}')
-    route = '/' + route.strip(os.sep)
-
+    route = '/' + route.strip(os.sep).replace(os.sep, "/") + "/" 
+    
+    if last_route:
+        route += last_route
+    
     handler = _import_handler(file_path)
     
     if method == "get":
