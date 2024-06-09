@@ -30,12 +30,12 @@ class TestRoutes(unittest.TestCase):
         handler = MagicMock()
         mock_import_handler.return_value = handler
         
-        file_path = os.path.join('routes', 'api', 'v1', 'resource__get.py')
-        _create_route_from_file(app, file_path)
+        base_path = 'routes'
+        file_path = os.path.join(base_path, 'api', 'v1', 'resource__get.py')
+        _create_route_from_file(app, file_path, base_path)
         
         route = '/api/v1/resource'
-        app.get.assert_called_once_with(route)
-        app.get(route).assert_called_once_with(handler)
+        app.add_api_route.assert_called_once_with(route, handler, methods=['GET'])
     
     @patch('simplesapi.auto_routing._import_handler')
     def test_create_route_from_file_only_method(self, mock_import_handler):
@@ -43,12 +43,12 @@ class TestRoutes(unittest.TestCase):
         handler = MagicMock()
         mock_import_handler.return_value = handler
         
+        base_path = 'routes'
         file_path = os.path.join('routes', 'api', 'v1', 'get.py')
-        _create_route_from_file(app, file_path)
+        _create_route_from_file(app, file_path, base_path)
         
         route = '/api/v1/'
-        app.get.assert_called_once_with(route)
-        app.get(route).assert_called_once_with(handler)
+        app.add_api_route.assert_called_once_with(route, handler, methods=['GET'])
     
     @patch('os.walk')
     @patch('simplesapi.auto_routing._create_route_from_file')
@@ -64,9 +64,9 @@ class TestRoutes(unittest.TestCase):
         register_routes(app, base_path)
         
         expected_calls = [
-            call(app, os.path.join(base_path, 'file1.py')),
-            call(app, os.path.join(base_path, 'file2.py')),
-            call(app, os.path.join(base_path, 'dir', 'file3.py'))
+            call(app, os.path.join(base_path, 'file1.py'), base_path.replace("/", os.sep)),
+            call(app, os.path.join(base_path, 'file2.py'), base_path.replace("/", os.sep)),
+            call(app, os.path.join(base_path, 'dir', 'file3.py'), base_path.replace("/", os.sep))
         ]
         
         mock_create_route_from_file.assert_has_calls(expected_calls, any_order=True)
