@@ -4,5 +4,6 @@ database = None
 
 @asynccontextmanager
 async def lifespan(app):
-    database = {}
+    app.database = {}
+    app.cache = {}
     yield
