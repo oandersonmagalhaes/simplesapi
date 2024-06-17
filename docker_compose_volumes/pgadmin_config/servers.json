@@ -1,0 +1,16 @@
+{
+    "Servers": {
+      "1": {
+        "Name": "PostgreSQL DockerCompose",
+        "Group": "Servers",
+        "Host": "postgres",
+        "Port": 5432,
+        "MaintenanceDB": "postgres",
+        "Username": "postgres",
+        "Password": "postgres",
+        "SSLMode": "prefer",
+        "Comment": "Pre-configured server."
+      }
+    }
+  }
+  
