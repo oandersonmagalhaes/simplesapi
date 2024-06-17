@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Any, Callable
 from starlette.requests import HTTPConnection
 from starlette.exceptions import HTTPException
 import inspect
@@ -7,10 +7,11 @@ from simplesapi.types import Cache, Database
 
 
 class SRequest:
-    def __init__(self, route: str, handler: Callable, method: str):
+    def __init__(self, route: str, handler: Callable, method: str, simples_extra: Any = None):
         self.handler = handler
         self.method = method
         self.route = route
+        self.simples_extra = simples_extra
         self.injected_params = None
         self.handler_params = inspect.signature(self.handler).parameters.values()
         self.handle_param_names = [param.name for param in self.handler_params]
@@ -57,18 +58,19 @@ class SRequest:
             for param in query_params
             if param not in request_params and param in self.handle_param_names
         }
-
+        extra_params = {"_simples_extra": self.simples_extra} if "_simples_extra" in self.handle_param_names else {}
+        
         missing_params = [
             param
             for param in self.handle_param_names
             if param not in path_params.keys()
             and param not in query_params.keys()
             and param not in self.injected_params.keys()
+            and param not in ["_simples_extra"]
         ]
-
+        
         if missing_params:
             raise HTTPException(
                 status_code=400, detail=f"Missing fields: {";".join(missing_params)}"
             )
-
-        return await self.handler(**path_params, **self.injected_params, **query_params)
+        return await self.handler(**path_params, **self.injected_params, **query_params, **extra_params)
