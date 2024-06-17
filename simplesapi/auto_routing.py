@@ -1,11 +1,11 @@
 import importlib
+import logging
 import os
 from fastapi import FastAPI
-from simplesapi.internal_logger import simplesapi_internal_logger
 from simplesapi.request import SRequest
 
 
-logger = simplesapi_internal_logger()
+logger = logging.getLogger("SimplesAPI")
 
 
 def _import_handler(module_path, handler_name="handler"):
