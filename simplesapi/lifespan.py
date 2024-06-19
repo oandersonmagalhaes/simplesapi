@@ -2,8 +2,10 @@ from contextlib import asynccontextmanager
 import logging
 from urllib.parse import urlparse
 
-import redis
+import redis.asyncio as redis
 from databases import Database
+
+from simplesapi.types import Cache
 
 
 logger = logging.getLogger("SimplesAPI")
@@ -11,6 +13,7 @@ logger = logging.getLogger("SimplesAPI")
 
 @asynccontextmanager
 async def lifespan(app):
+    app.cache = None
     await configure_database(app=app)
     await configure_cache(app=app)
     yield
@@ -37,8 +40,17 @@ async def configure_cache(app) -> None:
         redis_conn = redis.ConnectionPool.from_url(
             app.simples.cache_url, encoding="utf-8", decode_responses=True
         )
-        app.cache = redis.Redis(connection_pool=redis_conn)
+        app.cache = Cache(redis.Redis(connection_pool=redis_conn))
+        await cache_health_check(app)
     else:
+        app.cache = None
+
+async def cache_health_check(app):
+    try:
+        await app.cache.redis.ping()
+        logger.info("Cache connection successful 🟩")
+    except redis.exceptions.ConnectionError:
+        logger.error("Failed to connect to cache 🟥")
         app.cache = None
 
 
@@ -61,9 +73,9 @@ async def close_database(app) -> Database:
 
 async def close_cache(app) -> Database:
     if app.cache:
-        redis_info = extract_db_info(app.simples.redis_url)
+        cache_info = extract_db_info(app.simples.cache_url)
         logger.info(
-            f"Closing database | Host: {redis_info['host']} | Database: {redis_info['database']}"
+            f"Closing database | Host: {cache_info['host']} | Database: {cache_info['database']}"
         )
         await app.cache.close()
 
