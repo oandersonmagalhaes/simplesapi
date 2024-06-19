@@ -37,7 +37,7 @@ def _create_route_from_file(app: FastAPI, file_path: str, base_path: str) -> Non
     s_handler = SRequest(route=route, handler=handler, method=method)
     available_methods = ["GET", "POST", "PUT", "DELETE", "PATCH"]
     if method in available_methods:
-        app.add_api_route(route, s_handler.request)
+        app.add_api_route(route, s_handler.request, methods=[method])
         logger.info(f"Added route {method.upper()} {route}")
 
 
