@@ -13,6 +13,7 @@ logger = logging.getLogger("SimplesAPI")
 
 @asynccontextmanager
 async def lifespan(app):
+    app.database = None
     app.cache = None
     await configure_database(app=app)
     await configure_cache(app=app)
@@ -29,6 +30,16 @@ async def configure_database(app) -> None:
         )
         app.database = Database(app.simples.database_url)
         await app.database.connect()
+        await database_health_check(app)
+
+async def database_health_check(app):
+    try:
+        await app.database.fetch_val("SELECT 1")
+        logger.info("Database connection successful 🟩")
+    except Exception as e:
+        logger.error("Failed to connect to database 🟥")
+        app.database = None
+        raise e
 
 
 async def configure_cache(app) -> None:
@@ -68,7 +79,7 @@ async def close_database(app) -> Database:
         logger.info(
             f"Closing database | Host: {database_info['host']} | Database: {database_info['database']}"
         )
-        await app.database.close()
+        await app.database.disconnect()
 
 
 async def close_cache(app) -> Database:
