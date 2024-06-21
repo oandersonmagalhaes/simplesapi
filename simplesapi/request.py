@@ -1,4 +1,5 @@
-from typing import Any, Callable
+from typing import Any, Callable, Type, get_type_hints
+from pydantic import BaseModel
 from starlette.requests import HTTPConnection
 from starlette.exceptions import HTTPException
 import inspect
@@ -40,7 +41,11 @@ class SRequest:
                     for handle_param in handler_params
                     if handle_param.annotation is Cache
                 ]
-
+    
+    def get_param_type_by_name(self, function, param_name: str) -> Type:
+        param_types = get_type_hints(function)
+        return param_types.get(param_name)
+    
     async def request(self, request: HTTPConnection):
         route_params = self.extract_route_params()
         request_params = request.path_params
@@ -68,9 +73,21 @@ class SRequest:
             and param not in self.injected_params.keys()
             and param not in ["_simples_extra"]
         ]
-        
+
+        models = {}
+
+        if request.method in ["POST", "PUT", "PATCH"] and len(missing_params) == 1 and issubclass(self.get_param_type_by_name(self.handler, missing_params[0]), BaseModel):
+            [
+                models.update(
+                    {handle_param.name: self.get_param_type_by_name(self.handler, handle_param.name)(**await request.json())}
+                )
+                for handle_param in self.handler_params
+                if handle_param.name == missing_params[0]
+            ]
+            missing_params = []
+            
         if missing_params:
             raise HTTPException(
                 status_code=400, detail=f"Missing fields: {";".join(missing_params)}"
             )
-        return await self.handler(**path_params, **self.injected_params, **query_params, **extra_params)
+        return await self.handler(**path_params, **self.injected_params, **query_params, **extra_params, **models)
