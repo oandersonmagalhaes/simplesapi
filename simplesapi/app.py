@@ -1,23 +1,51 @@
-
-from typing import Optional
+from typing import Any, Optional
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
+from simplesapi import lifespan, settings
 from simplesapi.auto_routing import register_routes
 
-class _Simples(BaseModel):
-    verbose: bool
+
+from simplesapi.internal_logger import simplesapi_internal_logger
+
+class SimplesConfig(BaseModel):
+    verbose: Optional[bool] = Field(default=False)
     base_path: Optional[str] = Field(default="/")
-    redis_conn: Optional[str] = Field(default=None)
-    postgres_conn: Optional[str] = Field(default=None)
-    mysql_conn: Optional[str] = Field(default=None)
+    routes_path: Optional[str] = Field(default="routes")
+    cache_url: Optional[str] = Field(default=None)
+    cache_ssl: Optional[bool] = Field(default=None)
+    database_url: Optional[str] = Field(default=None)
+    
+    aws_local: Optional[bool] = Field(default=False)
+    aws_access_key_id: Optional[str] = Field(default=None)
+    aws_secret_access_key: Optional[str] = Field(default=None)
+    aws_region_name: Optional[str] = Field(default=None)
+
 
 class SimplesAPI(FastAPI):
-    def __init__(self, title="SimplesAPI", version="0.1.0", routes_path=None, base_path=None, redis_conn=None, postgres_conn=None, mysql_conn=None, verbose=False):
-        super().__init__(title=title, version=version)
-        self.simples = _Simples(verbose=verbose)
-        if routes_path:
-            register_routes(self,routes_path)
-
-    def validate_simples(self):
-        ...
+    def __init__(
+        self, routes_path=None, 
+        cache_url=settings.SIMPLESAPI_CACHE_URL, 
+        cache_ssl=settings.SIMPLESAPI_CACHE_SSL, 
+        database_url=settings.SIMPLES_DABASE_URL, 
+        aws_access_key_id=settings.SIMPLES_AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.SIMPLES_AWS_SECRET_ACCESS_KEY,
+        aws_region_name=settings.SIMPLES_AWS_REGION_NAME,
+        aws_local=settings.SIMPLES_AWS_LOCAL,
+        *args, **kwargs
+    ):
+        simplesapi_internal_logger()
+        self.simples = SimplesConfig(
+            routes_path=routes_path, 
+            cache_url=cache_url, 
+            cache_ssl=cache_ssl, 
+            database_url=database_url, 
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+            aws_region_name=aws_region_name,
+            aws_local=aws_local,
+            **kwargs
+        )
+        super().__init__(lifespan=lifespan.lifespan, *args, **kwargs)
+        if self.simples.routes_path:
+            register_routes(self, self.simples.routes_path)
