@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "SimplesAPI"
-version = "0.0.0-alpha.8"
+version = "0.0.0-alpha.12"
 description = "SimplesAPI is intended to be the easiest API to implementation in Python"
 authors = ["Anderson Magalhaes <andersonmagalhaes.dev@gmail.com>"]
 readme = "README.md"
@@ -12,6 +12,7 @@ asyncpg = "^0.29.0"
 databases = "^0.9.0"
 sqlalchemy = "^2.0.30"
 redis = "^5.0.6"
+aioboto3 = "^13.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
