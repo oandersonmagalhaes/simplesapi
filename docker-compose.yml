@@ -25,12 +25,19 @@ services:
     image: localstack/localstack:latest
     container_name: localstack
     environment:
-      SERVICES: s3,sqs,sns,lambda,dynamodb
+      SERVICES: s3,sqs,sns,lambda,dynamodb,kinesis
       PERSISTENCE: /tmp/localstack_data
     ports:
       - "4566:4566"
+      - "4568:4568"
+      - "4569:4569"
       - "4571:4571"
+      - "4582:4582"
+      - "4599:4599"
+      - "4600:4600"
+      - "4601:4601"
     volumes:
+      - ./docker_compose_volumes/localstack_init/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
       - ./docker_compose_volumes/localstack_data:/tmp/localstack_data
 
   pgadmin:
