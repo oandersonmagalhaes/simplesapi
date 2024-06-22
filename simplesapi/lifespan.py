@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
 import logging
 from urllib.parse import urlparse
-
 import redis.asyncio as redis
 from databases import Database
 
 from simplesapi.types import Cache
+from simplesapi.types.types import AWSSession
 
 
 logger = logging.getLogger("SimplesAPI")
@@ -17,9 +17,30 @@ async def lifespan(app):
     app.cache = None
     await configure_database(app=app)
     await configure_cache(app=app)
+    await configure_aws(app=app)
     yield
     await close_database(app=app)
     await close_cache(app=app)
+
+
+async def configure_aws(app) -> None:
+    if (
+        app.simples.aws_access_key_id
+        and app.simples.aws_secret_access_key
+        and app.simples.aws_region_name
+    ):
+        logger.info(f"Configuring AWS session | Local? {app.simples.aws_local}")
+
+        session = AWSSession(
+            aws_access_key_id=app.simples.aws_access_key_id,
+            aws_secret_access_key=app.simples.aws_secret_access_key,
+            region_name=app.simples.aws_region_name,
+            aws_local=app.simples.aws_local,
+        )
+        app.aws_session = session
+        logger.info("AWS session configured successfully 🟩")
+    else:
+        app.aws_session = None
 
 
 async def configure_database(app) -> None:
@@ -31,6 +52,7 @@ async def configure_database(app) -> None:
         app.database = Database(app.simples.database_url)
         await app.database.connect()
         await database_health_check(app)
+
 
 async def database_health_check(app):
     try:
@@ -45,9 +67,7 @@ async def database_health_check(app):
 async def configure_cache(app) -> None:
     if app.simples.cache_url:
         redis_info = extract_db_info(app.simples.cache_url)
-        logger.info(
-            f"Configuring cache | Host: {redis_info['host']}"
-        )
+        logger.info(f"Configuring cache | Host: {redis_info['host']}")
         redis_conn = redis.ConnectionPool.from_url(
             app.simples.cache_url, encoding="utf-8", decode_responses=True
         )
@@ -55,6 +75,7 @@ async def configure_cache(app) -> None:
         await cache_health_check(app)
     else:
         app.cache = None
+
 
 async def cache_health_check(app):
     try:
@@ -89,5 +110,3 @@ async def close_cache(app) -> Database:
             f"Closing database | Host: {cache_info['host']} | Database: {cache_info['database']}"
         )
         await app.cache.close()
-
-

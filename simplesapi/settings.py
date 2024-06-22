@@ -14,10 +14,10 @@ SIMPLESAPI_CACHE_SSL = str(getenv("SIMPLESAPI_CACHE_SSL", "true")).lower() in ["
 #########################################################################
 #   AWS                                                                 #
 #########################################################################
-AWS_ACCESS_KEY_ID = getenv("AWS_ACCESS_KEY_ID", None)
-AWS_SECRET_ACCESS_KEY = getenv("AWS_SECRET_ACCESS_KEY", None)
-AWS_DEFAULT_REGION = getenv("AWS_DEFAULT_REGION", None)
-
+SIMPLES_AWS_LOCAL = getenv("SIMPLES_AWS_LOCAL", "false").lower() in ["1","true"]
+SIMPLES_AWS_ACCESS_KEY_ID = getenv("SIMPLES_AWS_ACCESS_KEY_ID", None)
+SIMPLES_AWS_SECRET_ACCESS_KEY = getenv("SIMPLES_AWS_SECRET_ACCESS_KEY", None)
+SIMPLES_AWS_REGION_NAME = getenv("SIMPLES_AWS_REGION_NAME", "us-east-1")
 
 #########################################################################
 #   ENCRYPT                                                             #

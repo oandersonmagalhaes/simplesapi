@@ -4,7 +4,7 @@ from starlette.requests import HTTPConnection
 from starlette.exceptions import HTTPException
 import inspect
 
-from simplesapi.types import Cache, Database
+from simplesapi.types import Cache, Database, AWSSession
 
 
 class SRequest:
@@ -40,6 +40,12 @@ class SRequest:
                     self.injected_params.update({handle_param.name: request.app.cache})
                     for handle_param in handler_params
                     if handle_param.annotation is Cache
+                ]
+            if hasattr(request.app, "aws_session"):
+                [
+                    self.injected_params.update({handle_param.name: request.app.aws_session})
+                    for handle_param in handler_params
+                    if handle_param.annotation is AWSSession
                 ]
     
     def get_param_type_by_name(self, function, param_name: str) -> Type:
